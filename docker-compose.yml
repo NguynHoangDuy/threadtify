@@ -1,0 +1,55 @@
+services:
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./server:/app/server
+      - /app/server/node_modules
+    command: npm run start:dev
+    depends_on:
+      - db
+    links:
+      - db
+      - redis
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./client:/app/client
+      - /app/client/node_modules
+    links:
+      - server
+    command: npm run dev
+    restart: always
+
+  db:
+    image: postgres:16
+    ports:
+      - "5432:5432"
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+      POSTGRES_DB: db_threadtify
+      POSTGRES_HOST: db
+    volumes:
+      - docker-data-postgresql:/var/lib/postgresql/data
+  adminer:
+    image: adminer
+    ports:
+      - 8080:8080
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+    expose:
+      - 6379
+
+volumes:
+  docker-data-postgresql:

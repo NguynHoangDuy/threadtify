@@ -1,0 +1,256 @@
+@import 'tailwindcss';
+@import 'tw-animate-css';
+@import 'shadcn/tailwind.css';
+@import '@fontsource-variable/inter';
+
+@custom-variant dark (&:is(.dark *));
+
+/* ================================
+   THEME VARIABLES
+================================ */
+
+:root {
+     color-scheme: dark;
+     --radius: 0.75rem;
+
+     /* Base */
+     --background: #0b0b0f;
+     --foreground: #ececf3;
+
+     /* Surface */
+     --card: #121218;
+     --card-foreground: #ececf3;
+     --popover: #16161d;
+     --popover-foreground: #ececf3;
+
+     /* Brand */
+     --primary: #8b5cf6;
+     --primary-foreground: #ffffff;
+
+     --secondary: #1a1a23;
+     --secondary-foreground: #ececf3;
+
+     --accent: #1b1730;
+     --accent-foreground: #c4b5fd;
+
+     /* Muted */
+     --muted: #17171f;
+     --muted-foreground: #8a8a9a;
+
+     /* Border & Input */
+     --border: rgb(255 255 255 / 8%);
+     --input: rgb(255 255 255 / 12%);
+     --ring: #8b5cf6;
+
+     /* Status */
+     --destructive: #ef4444;
+     --success: #34d399;
+     --warning: #fbbf24;
+     --info: #60a5fa;
+
+     /* Charts */
+     --chart-1: #8b5cf6;
+     --chart-2: #34d399;
+     --chart-3: #fbbf24;
+     --chart-4: #60a5fa;
+     --chart-5: #f87171;
+
+     /* Sidebar */
+     --sidebar: #0e0e13;
+     --sidebar-foreground: #ececf3;
+     --sidebar-primary: #8b5cf6;
+     --sidebar-primary-foreground: #ffffff;
+     --sidebar-accent: #1b1730;
+     --sidebar-accent-foreground: #c4b5fd;
+     --sidebar-border: rgb(255 255 255 / 8%);
+     --sidebar-ring: #8b5cf6;
+
+     /* Typography */
+     --heading: 'Inter Variable', sans-serif;
+     --mono: 'Consolas', 'Courier New', monospace;
+
+     /* Additional */
+     --text: #9ca3af;
+     --text-h: #f3f4f6;
+     --bg: #16171d;
+     --code-bg: #1f2028;
+
+     --accent-bg: rgb(139 92 246 / 15%);
+     --accent-border: rgb(139 92 246 / 50%);
+     --social-bg: rgb(47 48 58 / 50%);
+
+     --shadow: 0 10px 15px -3px rgb(0 0 0 / 40%), 0 4px 6px -2px rgb(0 0 0 / 25%);
+}
+
+/* ================================
+   TAILWIND THEME
+================================ */
+
+@theme inline {
+     --font-heading: var(--heading);
+     --font-sans: 'Inter Variable', sans-serif;
+     --font-mono: var(--mono);
+
+     --color-sidebar-ring: var(--sidebar-ring);
+     --color-sidebar-border: var(--sidebar-border);
+     --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+     --color-sidebar-accent: var(--sidebar-accent);
+     --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+     --color-sidebar-primary: var(--sidebar-primary);
+     --color-sidebar-foreground: var(--sidebar-foreground);
+     --color-sidebar: var(--sidebar);
+
+     --color-chart-5: var(--chart-5);
+     --color-chart-4: var(--chart-4);
+     --color-chart-3: var(--chart-3);
+     --color-chart-2: var(--chart-2);
+     --color-chart-1: var(--chart-1);
+
+     --color-ring: var(--ring);
+     --color-input: var(--input);
+     --color-border: var(--border);
+     --color-destructive: var(--destructive);
+
+     --color-accent-foreground: var(--accent-foreground);
+     --color-accent: var(--accent);
+
+     --color-muted-foreground: var(--muted-foreground);
+     --color-muted: var(--muted);
+
+     --color-secondary-foreground: var(--secondary-foreground);
+     --color-secondary: var(--secondary);
+
+     --color-primary-foreground: var(--primary-foreground);
+     --color-primary: var(--primary);
+
+     --color-popover-foreground: var(--popover-foreground);
+     --color-popover: var(--popover);
+
+     --color-card-foreground: var(--card-foreground);
+     --color-card: var(--card);
+
+     --color-foreground: var(--foreground);
+     --color-background: var(--background);
+
+     --radius-sm: calc(var(--radius) * 0.6);
+     --radius-md: calc(var(--radius) * 0.8);
+     --radius-lg: var(--radius);
+     --radius-xl: calc(var(--radius) * 1.4);
+     --radius-2xl: calc(var(--radius) * 1.8);
+     --radius-3xl: calc(var(--radius) * 2.2);
+     --radius-4xl: calc(var(--radius) * 2.6);
+}
+
+/* ================================
+   DARK MODE
+================================ */
+
+.dark {
+     color-scheme: dark;
+}
+
+/* ================================
+   BASE STYLES
+================================ */
+
+@layer base {
+     * {
+          @apply border-border outline-ring/50;
+     }
+
+     html {
+          @apply font-sans;
+          color-scheme: dark;
+     }
+
+     body {
+          @apply bg-background text-foreground;
+          font-family: 'Inter Variable', sans-serif;
+          font-feature-settings: 'cv11', 'ss01';
+          -webkit-font-smoothing: antialiased;
+          -moz-osx-font-smoothing: grayscale;
+          min-height: 100vh;
+     }
+
+     h1,
+     h2 {
+          font-family: var(--heading);
+          font-weight: 500;
+          color: var(--text-h);
+     }
+
+     h1 {
+          font-size: 56px;
+          letter-spacing: -1.68px;
+          margin: 32px 0;
+     }
+
+     h2 {
+          font-size: 24px;
+          line-height: 1.18;
+          letter-spacing: -0.24px;
+          margin: 0 0 8px;
+     }
+
+     code,
+     .counter {
+          font-family: var(--mono);
+          display: inline-flex;
+          border-radius: 4px;
+          color: var(--text-h);
+     }
+
+     code {
+          font-size: 13px;
+          line-height: 1.35;
+          padding: 4px 8px;
+          background: var(--code-bg);
+     }
+
+     ::selection {
+          background: rgb(139 92 246 / 30%);
+          color: #ffffff;
+     }
+
+     * {
+          scrollbar-width: thin;
+          scrollbar-color: #383344 transparent;
+     }
+
+     ::-webkit-scrollbar {
+          width: 6px;
+          height: 6px;
+     }
+
+     ::-webkit-scrollbar-thumb {
+          background: #383344;
+          border-radius: 999px;
+     }
+
+     ::-webkit-scrollbar-track {
+          background: transparent;
+     }
+}
+
+/* ================================
+   RESPONSIVE
+================================ */
+
+@media (max-width: 1024px) {
+     h1 {
+          font-size: 36px;
+          margin: 20px 0;
+     }
+
+     h2 {
+          font-size: 20px;
+     }
+}
+
+/* ================================
+   COMPONENT UTILITIES
+================================ */
+
+#social .button-icon {
+     filter: invert(1) brightness(2);
+}
