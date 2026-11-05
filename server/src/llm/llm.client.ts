@@ -21,8 +21,8 @@ export class LLMClient {
         this.client = new OpenAI({
             apiKey: config.getOrThrow<string>('LLM_API_KEY'),
             baseURL: config.getOrThrow<string>('LLM_BASE_URL'),
-            maxRetries: 5, // tự thử lại khi 429 hoặc 5xx
-            timeout: 120_000, // 2 phút
+            maxRetries: 5,
+            timeout: 120_000,
         });
         this.model = config.getOrThrow<string>('LLM_MODEL');
     }
@@ -55,7 +55,7 @@ export class LLMClient {
 
             if (!text) {
                 await this.LLMService.update(llmRun.id, { error: choice?.finish_reason, status: LLMStatus.FAILED });
-                return [];
+                throw Error(`LLM empty, finish_reason=${choice?.finish_reason}`);
             }
 
             await this.LLMService.update(llmRun.id, { result: text, status: LLMStatus.SUCCESS });
@@ -66,13 +66,13 @@ export class LLMClient {
 
             if (!Array.isArray(results)) {
                 await this.LLMService.update(llmRun.id, { error: 'LLM error format, missing results', status: LLMStatus.FAILED });
-                return [];
+                throw Error(`LLM error format, missing results`);
             }
 
             return results;
         } catch (error) {
-            await this.LLMService.update(llmRun.id, { error: 'LLM error format, missing results', status: LLMStatus.FAILED });
-            return [];
+            await this.LLMService.update(llmRun.id, { error: JSON.stringify(error), status: LLMStatus.FAILED });
+            throw Error(JSON.stringify(error));
         }
     }
 
@@ -99,29 +99,29 @@ export class LLMClient {
             const choice = response.choices[0];
             const text = choice?.message?.content;
 
-            console.log('text', text);
-
             if (!text) {
                 await this.LLMService.update(llmRun.id, { error: `LLM empty, finish_reason=${choice?.finish_reason}`, status: LLMStatus.FAILED });
-                return null;
+                throw Error(`LLM empty, finish_reason=${choice?.finish_reason}`);
             }
 
-            const result = JSON.parse(text) as { content: string; score: number };
+            const parsed = JSON.parse(text);
+            const result = (parsed?.result ?? parsed) as { content: string; score: number };
 
             if (typeof result?.content !== 'string' || typeof result?.score !== 'number') {
                 await this.LLMService.update(llmRun.id, { result: text, error: 'LLM error format, missing content or score', status: LLMStatus.FAILED });
-                return null;
+                throw Error(`LLM error format, missing content or score`);
             }
 
             await this.LLMService.update(llmRun.id, { result: text, status: LLMStatus.SUCCESS });
 
             return result;
-        } catch (error: any) {
+        } catch (error) {
+            console.log('error', error);
             await this.LLMService.update(llmRun.id, {
-                error: String(error?.error?.failed_generation ?? error?.message ?? error),
+                error: JSON.stringify(error),
                 status: LLMStatus.FAILED,
             });
-            return null;
+            throw Error(JSON.stringify(error));
         }
     }
 }

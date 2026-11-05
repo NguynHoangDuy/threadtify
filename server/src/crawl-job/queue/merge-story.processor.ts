@@ -1,4 +1,4 @@
-import { Processor, WorkerHost } from '@nestjs/bullmq';
+import { OnWorkerEvent, Processor, WorkerHost } from '@nestjs/bullmq';
 import { MIN_SCORE, QUEUE_NAME } from '../../common/constants/queue.constant.js';
 import { PostPartsService } from '../../post-parts/post-parts.service.js';
 import { PostsService } from '../../posts/posts.service.js';
@@ -7,8 +7,9 @@ import { LLMClient } from '../../llm/llm.client.js';
 import { Job } from 'bullmq';
 import { CrawlJobStatus, PostStatus } from '../../common/constants/status.enum.js';
 import { StoriesService } from '../../stories/stories.service.js';
+import { sleep } from '../../common/utils/index.js';
 
-@Processor(QUEUE_NAME.MERGE_STORY, { concurrency: 1 })
+@Processor(QUEUE_NAME.MERGE_STORY_QUEUE, { concurrency: 1 })
 export class MergeStoryProcessor extends WorkerHost {
     constructor(
         private readonly PostPastService: PostPartsService,
@@ -20,36 +21,60 @@ export class MergeStoryProcessor extends WorkerHost {
         super();
     }
     async process(job: Job): Promise<any> {
-        const { data: post } = job;
+        const { data: jobId } = job;
 
         try {
-            await this.CrawlJobService.updateCrawlJob(post.jobId, { status: CrawlJobStatus.MERGE_STORY });
+            await this.CrawlJobService.updateCrawlJob(jobId, { status: CrawlJobStatus.MERGE_STORY });
 
-            const parts = await this.PostPastService.findPartInPost(post.id);
-            const content = [post.content, ...parts.map((p) => p.content)].join('\n\n---\n\n');
+            const posts = await this.PostsService.findPostToRunning({ jobId, status: [PostStatus.DONE_FILTER_COMMENT, PostStatus.FAILED_MERGE_STORY, PostStatus.MERGE_STORY] });
 
-            const merged = await this.LLMClient.mergeStory(content);
+            for (let i = 0; i < posts.length; i++) {
+                const post = posts[i];
+                const { id, content: postContent } = post;
+                try {
+                    await this.PostsService.updateStatus(id, PostStatus.MERGE_STORY);
 
-            if (!merged) {
-                return;
+                    const parts = await this.PostPastService.findPartInPost(id);
+                    const content = [postContent, ...parts.map((p) => p.content)].join('\n\n---\n\n');
+
+                    const merged = await this.LLMClient.mergeStory(content);
+
+                    if (!merged) {
+                        await this.PostsService.update(id, {
+                            status: PostStatus.FAILED_MERGE_STORY,
+                            error: 'LLM returned empty result',
+                        });
+                        continue;
+                    }
+
+                    await this.StoriesService.upsertByPost({
+                        jobId,
+                        postId: id,
+                        content: merged.content,
+                        score: merged.score,
+                    });
+
+                    await this.PostsService.updateStatus(id, PostStatus.COMPLETED);
+                    await sleep(1000);
+                } catch (error) {
+                    const message = error instanceof Error ? error.message : JSON.stringify(error);
+                    console.log('QUEUE_NAME.MERGE_STORY_QUEUE postId-jobId', `${id}-${jobId}`, message, error);
+                    await this.PostsService.update(id, { status: PostStatus.FAILED_MERGE_STORY, error: message });
+                }
             }
-
-            await this.StoriesService.create({
-                jobId: post.jobId,
-                postId: post.id,
-                content: merged.content,
-                score: merged.score,
-            });
-
-            if (merged.score >= MIN_SCORE) {
-                await this.CrawlJobService.incrementNumStories(post.jobId);
-            }
-
-            await this.PostsService.updateStatus(post.id, PostStatus.COMPLETED);
-
-            await this.CrawlJobService.finishIfDone(post.jobId);
+            const numStories = await this.StoriesService.countStories(jobId);
+            await this.CrawlJobService.updateCrawlJob(jobId, { status: CrawlJobStatus.COMPLETED, numStories });
         } catch (error) {
-            console.log('error', error);
+            console.log('MERGE_STORY_QUEUE', error);
+            throw Error(JSON.stringify(error));
+        }
+    }
+
+    @OnWorkerEvent('failed')
+    async onFailed(job: Job) {
+        const isLastAttempt = job.attemptsMade >= (job.opts.attempts ?? 1);
+        if (isLastAttempt) {
+            await this.CrawlJobService.updateCrawlJob(job.data, { status: CrawlJobStatus.FAILED });
         }
     }
 }

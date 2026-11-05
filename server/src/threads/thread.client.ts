@@ -35,7 +35,7 @@ export class ThreadsClient {
             return postDtos;
         } catch (error) {
             console.log('error', error);
-            throw new Error(`Error searching posts`);
+            throw error;
         }
     }
 
@@ -78,8 +78,7 @@ export class ThreadsClient {
             return allComments.map((comment) => mapToPostPartDto(comment, postId));
         } catch (error) {
             console.log('error', error);
-
-            throw new Error(`Error searching posts`);
+            throw error;
         }
     }
 }

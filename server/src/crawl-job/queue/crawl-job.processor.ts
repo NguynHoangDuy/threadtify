@@ -12,26 +12,31 @@ export class CrawlJobProcessor extends WorkerHost {
         private readonly threadsClient: ThreadsClient,
         private readonly postsService: PostsService,
         private readonly crawlJobService: CrawlJobService,
-        @InjectQueue(QUEUE_NAME.ENRICH_POST_QUEUE) private enrichPostQueue: Queue,
+        @InjectQueue(QUEUE_NAME.CRAWL_COMMENT_QUEUE) private CrawlCommentQueue: Queue,
     ) {
         super();
     }
     async process(job: any) {
         const { id: jobId, keyWord } = job.data;
         try {
-            await this.crawlJobService.updateCrawlJob(jobId, { status: CrawlJobStatus.RUNNING });
+            await this.crawlJobService.updateCrawlJob(jobId, { status: CrawlJobStatus.CRAWL_POST });
 
             const rawPost = await this.threadsClient.searchPostByKeyword(keyWord, jobId);
 
-            const posts = await this.postsService.createMany(rawPost);
-            await this.crawlJobService.updateCrawlJob(jobId, { status: CrawlJobStatus.CRAWL_POST, numPosts: posts.length });
-
-            for (const post of posts) {
-                await this.enrichPostQueue.add(QUEUE_NAME.ENRICH_POST_QUEUE, post, {
-                    attempts: 5,
-                    backoff: { type: 'exponential', delay: 10000 },
+            if (rawPost.length === 0) {
+                await this.crawlJobService.updateCrawlJob(jobId, {
+                    status: CrawlJobStatus.COMPLETED,
                 });
+                return;
             }
+
+            const posts = await this.postsService.createMany(rawPost);
+            await this.crawlJobService.updateCrawlJob(jobId, { status: CrawlJobStatus.DONE_CRAWL_POST, numPosts: posts.length });
+
+            await this.CrawlCommentQueue.add(QUEUE_NAME.CRAWL_COMMENT_QUEUE, jobId, {
+                attempts: 3,
+                backoff: { type: 'exponential', delay: 10000 },
+            });
         } catch (error) {
             console.error('Error processing job:', error);
             await this.crawlJobService.updateCrawlJob(jobId, { status: CrawlJobStatus.FAILED });

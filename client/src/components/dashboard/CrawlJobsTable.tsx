@@ -9,6 +9,8 @@ import { CrawlJobsTableSkeleton } from './CrawlJobsTableSkeleton';
 import { Pagination } from '../layout/Pagination';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
 import { fetchCrawlJobs, type CrawlJob } from '@/store/crawlJobsSlice';
+import { Link } from 'react-router';
+import { paths } from '@/router/path';
 
 export function CrawlJobsTable() {
      const [page, setPage] = useState(1);
@@ -85,7 +87,9 @@ export function CrawlJobsTable() {
                                    <TableCell className='px-2 py-4'>{formatDateTime(job.updatedAt)}</TableCell>
                                    <TableCell className='px-2 py-4'>
                                         <Button variant='outline' size='sm' className='cursor-pointer'>
-                                             <ExternalLink className='h-4 w-4' />
+                                             <Link to={paths.crawlJobDetail.replace(':id', String(job.id))} rel='noopener noreferrer' aria-label={`Open job #${job.id}`}>
+                                                  <ExternalLink className='h-4 w-4' />
+                                             </Link>
                                         </Button>
                                    </TableCell>
                               </TableRow>

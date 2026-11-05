@@ -9,9 +9,8 @@ import { ThreadsClient } from '../threads/thread.client.js';
 import { PostsModule } from '../posts/posts.module.js';
 import { QUEUE_NAME } from '../common/constants/queue.constant.js';
 import { PostPartsModule } from '../post-parts/post-parts.module.js';
-import { LLMClient } from '../llm/llm.client.js';
-import { EnrichPostProcessor } from './queue/enrich-post.processor.js';
-import { LLMService } from '../llm/llm.service.js';
+import { CrawlCommentProcessor } from './queue/crawl-comment.processor.js';
+import { FilterCommentProcessor } from './queue/filter-comment.processor.js';
 import { LLMModule } from '../llm/llm.module.js';
 import { MergeStoryProcessor } from './queue/merge-story.processor.js';
 import { StoriesModule } from '../stories/stories.module.js';
@@ -24,10 +23,13 @@ import { Post } from '../posts/entity/post.entity.js';
             name: QUEUE_NAME.CRAWL_JOB_QUEUE,
         }),
         BullModule.registerQueue({
-            name: QUEUE_NAME.ENRICH_POST_QUEUE,
+            name: QUEUE_NAME.CRAWL_COMMENT_QUEUE,
         }),
         BullModule.registerQueue({
-            name: QUEUE_NAME.MERGE_STORY,
+            name: QUEUE_NAME.FILTER_COMMENT_QUEUE,
+        }),
+        BullModule.registerQueue({
+            name: QUEUE_NAME.MERGE_STORY_QUEUE,
         }),
         PostsModule,
         PostPartsModule,
@@ -35,6 +37,6 @@ import { Post } from '../posts/entity/post.entity.js';
         StoriesModule,
     ],
     controllers: [CrawlJobController],
-    providers: [CrawlJobService, CrawlJobProcessor, EnrichPostProcessor, ThreadsClient, MergeStoryProcessor],
+    providers: [CrawlJobService, CrawlJobProcessor, CrawlCommentProcessor, FilterCommentProcessor, ThreadsClient, MergeStoryProcessor],
 })
 export class CrawlJobModule {}

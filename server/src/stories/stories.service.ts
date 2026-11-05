@@ -1,9 +1,10 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
-import { Repository } from 'typeorm';
+import { MoreThanOrEqual, Repository } from 'typeorm';
 import { Stories } from './entity/stories.entity.js';
 import { CreateStoryDto } from './dto/stories.dto.js';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UpdateStoryDto } from './dto/updateStories.dto.js';
+import { MIN_SCORE } from '../common/constants/queue.constant.js';
 
 @Injectable()
 export class StoriesService {
@@ -32,5 +33,13 @@ export class StoriesService {
             where: { jobId },
             order: { createdAt: 'ASC' },
         });
+    }
+
+    async upsertByPost(data: CreateStoryDto) {
+        await this.StoriesRepository.upsert(data, ['postId']);
+    }
+
+    async countStories(jobId: string) {
+        return this.StoriesRepository.count({ where: { jobId, score: MoreThanOrEqual(MIN_SCORE) } });
     }
 }

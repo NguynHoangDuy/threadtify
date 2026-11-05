@@ -1,3 +1,16 @@
+export type Post = {
+     id: string;
+     threadId: string;
+     jobId: number;
+     author: string;
+     content: string;
+     imageUrl: string;
+     createdAt: Date;
+     updatedAt: Date;
+     status: string;
+     postUrl: string;
+};
+
 export const PostStatus = {
      PENDING: 'PENDING',
      RUNNING: 'RUNNING',
@@ -12,4 +25,9 @@ export const postStatusStyles: Record<string, string> = {
      ENRICH: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
      COMPLETED: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
      FAILED: 'bg-red-500/10 text-red-400 border-red-500/20',
+};
+
+export type PostDetail = {
+     story: { id: string; score: number } | null;
+     comments: { content: string }[];
 };

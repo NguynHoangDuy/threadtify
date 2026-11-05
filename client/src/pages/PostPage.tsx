@@ -1,26 +1,14 @@
 import { Pagination } from '@/components/layout/Pagination';
+import { PostDialog } from '@/components/post/PostDialog';
 import { PostCardSkeleton } from '@/components/post/PostLoading';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { postStatusStyles } from '@/constants/post';
+import { postStatusStyles, type Post } from '@/constants/post';
 import { parseJson } from '@/utils';
 import { callAPI } from '@/utils/apiCaller';
 import { Quote } from 'lucide-react';
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
-
-type Post = {
-     id: string;
-     threadId: string;
-     jobId: number;
-     author: string;
-     content: string;
-     imageUrl: string;
-     createdAt: Date;
-     updatedAt: Date;
-     status: string;
-     postUrl: string;
-};
 
 export const PostPage = () => {
      const { id } = useParams<{ id: string }>();
@@ -31,6 +19,17 @@ export const PostPage = () => {
      const [page, setPage] = useState<number>(1);
      const [pageSize, setPageSize] = useState<number>(9);
      const [totalPage, setTotalPage] = useState<number>(1);
+     const [selectedPost, setSelectedPost] = useState<Post | null>(null);
+     const [open, setOpen] = useState(false);
+
+     const handleOpen = (post: Post) => {
+          setSelectedPost(post);
+          setOpen(true);
+     };
+
+     const handleClose = () => {
+          setOpen(false);
+     };
 
      useEffect(() => {
           const fetchPosts = async () => {
@@ -61,6 +60,7 @@ export const PostPage = () => {
                                    <Card
                                         className='group relative flex flex-col overflow-hidden h-full cursor-pointer transition-all duration-300 hover:-translate-y-1 hover:border-primary/40 hover:shadow-lg hover:shadow-primary/10 min-h-[250px] max-h-[250px]'
                                         key={post.id}
+                                        onClick={() => handleOpen(post)}
                                    >
                                         <Quote className='absolute top-2 right-4 h-12 w-12 text-muted-foreground/10 fill-current' />
 
@@ -79,6 +79,8 @@ export const PostPage = () => {
                          })
                     )}
                </div>
+
+               <PostDialog selectedPost={selectedPost} handleClose={handleClose} open={open} />
                {totalPage > 1 && <Pagination page={page} pageSize={pageSize} total={totalPage} onPageChange={setPage} onPageSizeChange={setPageSize} pageSizeOptions={[9, 18, 27]} />}
           </div>
      );

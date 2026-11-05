@@ -25,7 +25,7 @@ export class CrawlJobService {
         return crawlJob;
     }
 
-    async updateCrawlJob(id: number, { status, numPosts, numStories }: { status?: CrawlJobStatus; numPosts?: number; numStories?: number }): Promise<CrawlJob> {
+    async updateCrawlJob(id: number, { status, numPosts, numStories, numComments, numRelevant }: { status?: CrawlJobStatus; numPosts?: number; numStories?: number; numComments?: number; numRelevant?: number }): Promise<CrawlJob> {
         return this.crawlJobRepository.findOneBy({ id }).then((crawlJob) => {
             if (!crawlJob) {
                 throw new Error(`CrawlJob with id ${id} not found`);
@@ -43,12 +43,20 @@ export class CrawlJobService {
                 crawlJob.numStories = numStories;
             }
 
+            if (numComments) {
+                crawlJob.numComments = numComments;
+            }
+
+            if (numRelevant) {
+                crawlJob.numRelevant = numRelevant;
+            }
+
             return this.crawlJobRepository.save(crawlJob);
         });
     }
 
-    async incrementNumStories(id: number, by = 1) {
-        const result = await this.crawlJobRepository.increment({ id }, 'numStories', by);
+    async incrementNum(key: string, id: number, by = 1) {
+        const result = await this.crawlJobRepository.increment({ id }, key, by);
 
         if (!result.affected) {
             throw new Error(`CrawlJob with id ${id} not found`);

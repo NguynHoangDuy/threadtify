@@ -25,6 +25,9 @@ export class Post {
     @Column({ default: PostStatus.PENDING })
     status: PostStatus;
 
+    @Column({ type: 'text', nullable: true })
+    error: string | null;
+
     @Column()
     postUrl: string;
 

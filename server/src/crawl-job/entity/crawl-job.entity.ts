@@ -16,6 +16,12 @@ export class CrawlJob {
     @Column({ default: 0 })
     numStories: number;
 
+    @Column({ default: 0 })
+    numComments: number;
+
+    @Column({ default: 0 })
+    numRelevant: number;
+
     @Column({ default: CrawlJobStatus.PENDING })
     status: CrawlJobStatus;
 

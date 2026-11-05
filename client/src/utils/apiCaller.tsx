@@ -10,17 +10,21 @@ const httpClient = axios.create({
           'Content-Type': 'application/json',
      },
 });
-export const callAPI = async (method: HttpMethod, url: string, data?: object) => {
+
+export const callAPI = async (method: HttpMethod, url: string, data?: object, options?: { signal?: AbortSignal }) => {
      try {
           const config: AxiosRequestConfig = {
                method,
                url,
                data,
+               signal: options?.signal,
           };
           const response = await httpClient.request(config);
           return response.data;
      } catch (error) {
-          console.error('API Error:', error);
+          if (!axios.isCancel(error)) {
+               console.error('API Error:', error);
+          }
           throw error;
      }
 };

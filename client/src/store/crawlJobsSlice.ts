@@ -7,6 +7,8 @@ export type CrawlJob = {
      status: string;
      numPosts: number;
      numStories: number;
+     numComments: number;
+     numRelevant: number;
      createdAt: string;
      updatedAt: string | null;
 };

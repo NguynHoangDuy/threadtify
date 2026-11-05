@@ -1,9 +1,10 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { Post } from './entity/post.entity.js';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { In, Repository } from 'typeorm';
 import { PostDto } from './dto/post.dto.js';
 import { PostStatus } from '../common/constants/status.enum.js';
+import { UpdatePostDto } from './dto/update-post.dto.js';
 
 @Injectable()
 export class PostsService {
@@ -28,8 +29,24 @@ export class PostsService {
         return this.postRepository.save(post);
     }
 
+    async update(id: string, data: UpdatePostDto): Promise<Post> {
+        const post = await this.postRepository.findOneBy({ id });
+
+        if (!post) {
+            throw new NotFoundException(`Post with id ${id} not found`);
+        }
+
+        Object.assign(post, data);
+
+        return this.postRepository.save(post);
+    }
+
     findByJobId(jobId: number): Promise<Post[]> {
         return this.postRepository.find({ where: { jobId } });
+    }
+
+    findPostToRunning({ jobId, status }: { jobId: number; status: PostStatus[] }): Promise<Post[]> {
+        return this.postRepository.find({ where: { jobId, status: In(status) } });
     }
 
     async findAll({ page, pageSize, jobId, id }: { page: number; pageSize: number; jobId?: number; id?: string }) {

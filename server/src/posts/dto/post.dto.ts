@@ -1,4 +1,5 @@
-import { IsNotEmpty, IsNumber, IsString } from 'class-validator';
+import { IsEnum, IsNotEmpty, IsNumber, IsOptional, IsString } from 'class-validator';
+import { PostStatus } from '../../common/constants/status.enum.js';
 
 export class PostDto {
     @IsString()
@@ -14,6 +15,14 @@ export class PostDto {
 
     @IsString()
     content: string;
+
+    @IsOptional()
+    @IsEnum(PostStatus)
+    status?: PostStatus;
+
+    @IsOptional()
+    @IsString()
+    error?: string | null;
 
     @IsString()
     imageUrl: string;
