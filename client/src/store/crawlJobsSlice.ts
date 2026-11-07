@@ -10,7 +10,7 @@ export type CrawlJob = {
      numComments: number;
      numRelevant: number;
      createdAt: string;
-     updatedAt: string | null;
+     updatedAt: string;
 };
 
 const initialState: { items: CrawlJob[]; isLoading: boolean; total: number } = {

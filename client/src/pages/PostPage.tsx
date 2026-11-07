@@ -3,7 +3,7 @@ import { PostDialog } from '@/components/post/PostDialog';
 import { PostCardSkeleton } from '@/components/post/PostLoading';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
-import { postStatusStyles, type Post } from '@/constants/post';
+import { PostStatusStyle, type Post } from '@/constants/post';
 import { parseJson } from '@/utils';
 import { callAPI } from '@/utils/apiCaller';
 import { Quote } from 'lucide-react';
@@ -66,8 +66,8 @@ export const PostPage = () => {
 
                                         <CardHeader className='flex flex-row items-center justify-between pr-16'>
                                              <div className='text-sm font-medium text-muted-foreground'>@{user.username ?? 'Unknown User'}</div>
-                                             <Badge variant='outline' className={`rounded-md px-2 py-1 text-[11px] font-medium tracking-wide border ${postStatusStyles[post.status] ?? ''}`}>
-                                                  {post.status}
+                                             <Badge variant='outline' className={`shrink-0 text-[10px] ${PostStatusStyle[post.status].className}`}>
+                                                  {PostStatusStyle[post.status].label}
                                              </Badge>
                                         </CardHeader>
 

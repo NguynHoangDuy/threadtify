@@ -45,3 +45,26 @@ export const formatDuration = (start?: string | Date | null, end?: string | Date
      if (minutes > 0) return `${minutes}m ${seconds}s`;
      return `${seconds}s`;
 };
+
+type JobTimes = {
+     startTime: string;
+     endTime: string;
+     date: string;
+};
+
+const pad = (n: number) => String(n).padStart(2, '0');
+
+export function getJobTimes(createdAt: string | Date, updatedAt: string | Date): JobTimes {
+     const created = new Date(createdAt);
+     const updated = new Date(updatedAt);
+
+     const formatTime = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}`;
+
+     const date = `${pad(created.getDate())}/${pad(created.getMonth() + 1)}/${created.getFullYear()}`;
+
+     return {
+          startTime: formatTime(created),
+          endTime: formatTime(updated),
+          date,
+     };
+}

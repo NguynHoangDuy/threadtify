@@ -1,21 +1,60 @@
-export const statusStyles: Record<string, string> = {
-     PENDING: 'bg-zinc-500/10 text-zinc-400 border-zinc-500/20',
-     RUNNING: 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-     PAUSED: 'bg-amber-500/10 text-amber-400 border-amber-500/20',
-     CRAWL_POST: 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
-     CRAWL_PART: 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20',
-     MERGE_STORY: 'bg-purple-500/10 text-purple-400 border-purple-500/20',
-     COMPLETED: 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20',
-     FAILED: 'bg-red-500/10 text-red-400 border-red-500/20',
-};
-
 export const CrawlJobStatus = {
      PENDING: 'PENDING',
      RUNNING: 'RUNNING',
      PAUSED: 'PAUSED',
      CRAWL_POST: 'CRAWL_POST',
-     CRAWL_PART: 'CRAWL_PART',
+     DONE_CRAWL_POST: 'DONE_CRAWL_POST',
+     CRAWL_COMMENT: 'CRAWL_COMMENT',
+     DONE_CRAWL_COMMENT: 'DONE_CRAWL_COMMENT',
+     FILTER_COMMENT: 'FILTER_COMMENT',
+     DONE_FILTER_COMMENT: 'DONE_FILTER_COMMENT',
      MERGE_STORY: 'MERGE_STORY',
+     FAILED_MERGE_STORY: 'FAILED_MERGE_STORY',
      COMPLETED: 'COMPLETED',
      FAILED: 'FAILED',
+};
+
+export const CrawlJobStatusStyle: Record<string, { label: string; className: string }> = {
+     [CrawlJobStatus.PENDING]: { label: 'PENDING', className: 'bg-zinc-800 text-zinc-300' },
+     [CrawlJobStatus.PAUSED]: { label: 'PAUSED', className: 'bg-zinc-800 text-zinc-300' },
+     [CrawlJobStatus.RUNNING]: { label: 'RUNNING', className: 'bg-amber-950 text-amber-400' },
+     [CrawlJobStatus.CRAWL_POST]: { label: 'CRAWLING POSTS', className: 'bg-amber-950 text-amber-400' },
+     [CrawlJobStatus.DONE_CRAWL_POST]: { label: 'POSTS DONE', className: 'bg-amber-950 text-amber-400' },
+     [CrawlJobStatus.CRAWL_COMMENT]: { label: 'CRAWLING COMMENTS', className: 'bg-amber-950 text-amber-400' },
+     [CrawlJobStatus.DONE_CRAWL_COMMENT]: { label: 'COMMENTS DONE', className: 'bg-amber-950 text-amber-400' },
+     [CrawlJobStatus.FILTER_COMMENT]: { label: 'FILTERING', className: 'bg-amber-950 text-amber-400' },
+     [CrawlJobStatus.DONE_FILTER_COMMENT]: { label: 'FILTER DONE', className: 'bg-amber-950 text-amber-400' },
+     [CrawlJobStatus.MERGE_STORY]: { label: 'MERGING STORIES', className: 'bg-amber-950 text-amber-400' },
+     [CrawlJobStatus.FAILED_MERGE_STORY]: { label: 'MERGE FAILED', className: 'bg-red-950 text-red-400' },
+     [CrawlJobStatus.COMPLETED]: { label: 'COMPLETED', className: 'bg-green-950 text-green-400' },
+     [CrawlJobStatus.FAILED]: { label: 'FAILED', className: 'bg-red-950 text-red-400' },
+};
+
+export type StepState = 'done' | 'running' | 'failed' | 'waiting';
+
+export const STEPS = [
+     { label: 'Crawl Post', running: CrawlJobStatus.CRAWL_POST, done: CrawlJobStatus.DONE_CRAWL_POST },
+     { label: 'Crawl Comments', running: CrawlJobStatus.CRAWL_COMMENT, done: CrawlJobStatus.DONE_CRAWL_COMMENT },
+     { label: 'Filter Comments', running: CrawlJobStatus.FILTER_COMMENT, done: CrawlJobStatus.DONE_FILTER_COMMENT },
+     { label: 'Build story', running: CrawlJobStatus.MERGE_STORY, done: CrawlJobStatus.COMPLETED, failed: CrawlJobStatus.FAILED_MERGE_STORY },
+];
+
+export const STATUS_ORDER = [
+     CrawlJobStatus.PENDING,
+     CrawlJobStatus.RUNNING,
+     CrawlJobStatus.CRAWL_POST,
+     CrawlJobStatus.DONE_CRAWL_POST,
+     CrawlJobStatus.CRAWL_COMMENT,
+     CrawlJobStatus.DONE_CRAWL_COMMENT,
+     CrawlJobStatus.FILTER_COMMENT,
+     CrawlJobStatus.DONE_FILTER_COMMENT,
+     CrawlJobStatus.MERGE_STORY,
+     CrawlJobStatus.COMPLETED,
+];
+
+export const StepStyle: Record<StepState, { circle: string; title: string }> = {
+     done: { circle: 'bg-green-950 text-green-400', title: 'text-white' },
+     running: { circle: 'bg-amber-950 text-amber-400 animate-pulse', title: 'text-amber-400' },
+     failed: { circle: 'bg-red-950 text-red-400', title: 'text-red-400' },
+     waiting: { circle: 'bg-zinc-900 text-zinc-500', title: 'text-zinc-500' },
 };

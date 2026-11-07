@@ -50,20 +50,31 @@ export class PostsService {
     }
 
     async findAll({ page, pageSize, jobId, id }: { page: number; pageSize: number; jobId?: number; id?: string }) {
-        const [items, total] = await this.postRepository.findAndCount({
-            where: {
-                ...(jobId && { jobId: Number(jobId) }),
-                ...(id && { id }),
-            },
-            order: { createdAt: 'DESC', id: 'DESC' },
-            skip: (page - 1) * pageSize,
-            take: pageSize,
+        const where = {
+            ...(jobId && { jobId: Number(jobId) }),
+            ...(id && { id }),
+        };
+
+        const qb = this.postRepository
+            .createQueryBuilder('post')
+            .leftJoin('post.postParts', 'part', 'part.isRelevant = :isRelevant', { isRelevant: true })
+            .addSelect('COUNT(part.id)', 'numComment')
+            .groupBy('post.id')
+            .orderBy('post.createdAt', 'DESC')
+            .addOrderBy('post.id', 'DESC')
+            .offset((page - 1) * pageSize)
+            .limit(pageSize);
+
+        if (jobId) qb.andWhere('post.jobId = :jobId', { jobId: Number(jobId) });
+        if (id) qb.andWhere('post.id = :id', { id });
+
+        const [{ entities, raw }, total] = await Promise.all([qb.getRawAndEntities(), this.postRepository.count({ where })]);
+
+        const items = entities.map((post) => {
+            const row = raw.find((r) => r.post_id === post.id);
+            return { ...post, numRelatedComment: Number(row?.numComment ?? 0) };
         });
 
-        return {
-            items,
-            total,
-            totalPages: Math.ceil(total / pageSize),
-        };
+        return { items, total, totalPages: Math.ceil(total / pageSize) };
     }
 }
