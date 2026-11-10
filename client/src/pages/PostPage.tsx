@@ -4,6 +4,7 @@ import { PostCardSkeleton } from '@/components/post/PostLoading';
 import { Badge } from '@/components/ui/badge';
 import { Card, CardContent, CardHeader } from '@/components/ui/card';
 import { PostStatusStyle, type Post } from '@/constants/post';
+import { useAppSelector } from '@/store/hooks';
 import { parseJson } from '@/utils';
 import { callAPI } from '@/utils/apiCaller';
 import { Quote } from 'lucide-react';
@@ -21,6 +22,7 @@ export const PostPage = () => {
      const [totalPage, setTotalPage] = useState<number>(1);
      const [selectedPost, setSelectedPost] = useState<Post | null>(null);
      const [open, setOpen] = useState(false);
+     const { pusher } = useAppSelector((state) => state.posts);
 
      const handleOpen = (post: Post) => {
           setSelectedPost(post);
@@ -30,6 +32,19 @@ export const PostPage = () => {
      const handleClose = () => {
           setOpen(false);
      };
+
+     useEffect(() => {
+          setPosts((prev) => {
+               const index = prev.findIndex((item) => item.id === pusher.id);
+               if (index === -1) return prev;
+
+               const next = [...prev];
+               next[index] = { ...prev[index], ...pusher.data };
+               return next;
+          });
+
+          setSelectedPost((prev) => (prev && prev.id === pusher.id ? { ...prev, ...pusher.data } : prev));
+     }, [pusher.id, pusher.data]);
 
      useEffect(() => {
           const fetchPosts = async () => {

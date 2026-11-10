@@ -38,6 +38,7 @@
     "ioredis": "^5.11.1",
     "openai": "^7.45.1",
     "pg": "^8.23.1",
+    "pusher": "^5.3.4",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
     "scavio": "^0.28.1",

@@ -1,17 +1,14 @@
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 
 import { CrawlJobsListSkeleton } from './CrawlJobRowSkeleton';
 import { CrawlJobRow } from './CrawlJobRow';
 import { Pagination } from '../layout/Pagination';
 import { useAppDispatch, useAppSelector } from '@/store/hooks';
-import { fetchCrawlJobs } from '@/store/crawlJobsSlice';
+import { fetchCrawlJobs, setPage, setPageSize } from '@/store/crawlJobsSlice';
 
 export function CrawlJobsTable() {
-     const [page, setPage] = useState(1);
-     const [pageSize, setPageSize] = useState(10);
-
      const dispatch = useAppDispatch();
-     const { items: jobs, isLoading, total } = useAppSelector((state) => state.crawlJobs);
+     const { items: jobs, isLoading, total, page, pageSize } = useAppSelector((state) => state.crawlJobs);
 
      useEffect(() => {
           if (jobs.length === 0) {

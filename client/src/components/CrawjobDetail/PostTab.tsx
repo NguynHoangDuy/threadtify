@@ -9,6 +9,7 @@ import { parseJson } from '@/utils';
 import { PostCardSkeleton } from '../post/PostLoading';
 import { Badge } from '../ui/badge';
 import { PostDialog } from '../post/PostDialog';
+import { useAppSelector } from '@/store/hooks';
 
 export const PostTab = ({ job }: { job: CrawlJob }) => {
      const [isLoading, setIsLoading] = useState(false);
@@ -18,6 +19,8 @@ export const PostTab = ({ job }: { job: CrawlJob }) => {
      const [totalPage, setTotalPage] = useState(1);
      const [selectedPost, setSelectedPost] = useState<Post | null>(null);
      const [open, setOpen] = useState(false);
+
+     const { pusher } = useAppSelector((state) => state.posts);
 
      const handleOpen = (post: Post) => {
           setSelectedPost(post);
@@ -40,6 +43,18 @@ export const PostTab = ({ job }: { job: CrawlJob }) => {
           };
           fetchPosts();
      }, [job.id, page, pageSize]);
+
+     useEffect(() => {
+          setPosts((prev) => {
+               const index = prev.findIndex((item) => item.id === pusher.id);
+               if (index === -1) return prev;
+
+               const next = [...prev];
+               next[index] = { ...prev[index], ...pusher.data };
+               return next;
+          });
+          setSelectedPost((prev) => (prev && prev.id === pusher.id ? { ...prev, ...pusher.data } : prev));
+     }, [pusher.id, pusher.data]);
 
      return (
           <div>

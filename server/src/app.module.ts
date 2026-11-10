@@ -8,6 +8,7 @@ import { ThreadsModule } from './threads/thread.module.js';
 import { PostPartsModule } from './post-parts/post-parts.module.js';
 import { LLMModule } from './llm/llm.module.js';
 import { StoriesModule } from './stories/stories.module.js';
+import { PusherModule } from './pusher/pusher.module.js';
 
 @Module({
     imports: [
@@ -37,6 +38,7 @@ import { StoriesModule } from './stories/stories.module.js';
         PostPartsModule,
         LLMModule,
         StoriesModule,
+        PusherModule,
     ],
 })
 export class AppModule {}

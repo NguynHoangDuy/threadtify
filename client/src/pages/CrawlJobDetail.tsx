@@ -7,7 +7,9 @@ import { CrawlJobStatus, CrawlJobStatusStyle, STATUS_ORDER, STEPS, StepStyle, ty
 import type { CrawlJob } from '@/store/crawlJobsSlice';
 import { useAppSelector } from '@/store/hooks';
 import { formatDuration, getJobTimes } from '@/utils';
+import { callAPI } from '@/utils/apiCaller';
 import { ArrowLeft, Loader2, RefreshCcw } from 'lucide-react';
+import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import { Fragment } from 'react/jsx-runtime';
 
@@ -15,12 +17,41 @@ export const CrawlJobDetail = () => {
      const { id } = useParams<{ id: string }>();
 
      const jobId = id ? Number(id) : undefined;
-     const { items: jobs } = useAppSelector((state) => state.crawlJobs);
+     const { items: jobs, pusher } = useAppSelector((state) => state.crawlJobs);
+     const [job, setJob] = useState(jobs.find((job: CrawlJob) => job.id === jobId));
 
-     const job = jobs.find((job: CrawlJob) => job.id === jobId);
+     const [isLoading, setIsLoading] = useState(false);
 
-     if (!job) {
-          return <p className='py-12 text-center text-sm text-muted-foreground'>Crawl Job not found</p>;
+     useEffect(() => {
+          if (job) return;
+
+          const fetch = async () => {
+               setIsLoading(true);
+               try {
+                    const response = await callAPI('GET', `/api/crawl-job/${id}`);
+                    setJob(response);
+               } catch (error) {
+                    console.log('error', error);
+               }
+               setIsLoading(false);
+          };
+
+          fetch();
+     }, [id]);
+
+     useEffect(() => {
+          if (!pusher.data || pusher.id !== Number(jobId)) return;
+
+          setJob((prev) => (prev ? { ...prev, ...pusher.data } : prev));
+     }, [pusher, jobId]);
+
+     if (isLoading || !job) {
+          return (
+               <div className='flex items-center justify-center gap-2 py-12 text-sm text-muted-foreground'>
+                    <Loader2 className='h-4 w-4 animate-spin' />
+                    Loading...
+               </div>
+          );
      }
 
      const { startTime, endTime, date } = getJobTimes(job.createdAt, job.updatedAt);

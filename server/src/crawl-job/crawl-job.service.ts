@@ -63,14 +63,6 @@ export class CrawlJobService {
         }
     }
 
-    getCrawlJob(limit: number, offset: number): Promise<CrawlJob[]> {
-        return this.crawlJobRepository.find({
-            skip: offset,
-            take: limit,
-            order: { createdAt: 'DESC' },
-        });
-    }
-
     async finishIfDone(jobId: number) {
         const remaining = await this.postRepository.count({
             where: {
@@ -109,5 +101,11 @@ export class CrawlJobService {
             pageSize,
             totalPages: Math.ceil(total / pageSize),
         };
+    }
+
+    async getCrawlJob(id: number) {
+        return this.crawlJobRepository.findOneBy({
+            id,
+        });
     }
 }

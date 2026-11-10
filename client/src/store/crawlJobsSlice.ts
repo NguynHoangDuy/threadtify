@@ -12,11 +12,15 @@ export type CrawlJob = {
      createdAt: string;
      updatedAt: string;
 };
+type PusherState = { id: number | null; data: Partial<CrawlJob> | null };
 
-const initialState: { items: CrawlJob[]; isLoading: boolean; total: number } = {
+const initialState: { items: CrawlJob[]; isLoading: boolean; total: number; page: number; pageSize: number; pusher: PusherState } = {
      items: [],
      isLoading: false,
      total: 0,
+     page: 1,
+     pageSize: 10,
+     pusher: { id: null, data: null },
 };
 
 export type CrawlJobParams = {
@@ -27,8 +31,12 @@ export type CrawlJobParams = {
 };
 
 export const fetchCrawlJobs = createAsyncThunk('crawlJobs/fetch', async (data: CrawlJobParams) => {
-     const response = await callAPI('POST', '/api/crawl-job', data);
-     return { items: response.items, total: response.total };
+     try {
+          const response = await callAPI('POST', '/api/crawl-job', data);
+          return { items: response.items, total: response.total };
+     } catch (err) {
+          return { items: [], total: 0 };
+     }
 });
 
 const crawlJobsSlice = createSlice({
@@ -37,6 +45,21 @@ const crawlJobsSlice = createSlice({
      reducers: {
           setJobs: (state, action: PayloadAction<CrawlJob[]>) => {
                state.items = action.payload;
+          },
+          setJobPusher: (state, action: PayloadAction<{ id: number; data: Partial<CrawlJob> }>) => {
+               const { id, data } = action.payload;
+               state.pusher = action.payload;
+
+               const job = state.items.find((item) => item.id === id);
+               if (job) {
+                    Object.assign(job, data);
+               }
+          },
+          setPage: (state, action: PayloadAction<number>) => {
+               state.page = action.payload;
+          },
+          setPageSize: (state, action: PayloadAction<number>) => {
+               state.pageSize = action.payload;
           },
      },
      extraReducers: (builder) => {
@@ -56,5 +79,5 @@ const crawlJobsSlice = createSlice({
      },
 });
 
-export const { setJobs } = crawlJobsSlice.actions;
+export const { setJobs, setJobPusher, setPage, setPageSize } = crawlJobsSlice.actions;
 export default crawlJobsSlice.reducer;

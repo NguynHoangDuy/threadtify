@@ -15,6 +15,7 @@ import { LLMModule } from '../llm/llm.module.js';
 import { MergeStoryProcessor } from './queue/merge-story.processor.js';
 import { StoriesModule } from '../stories/stories.module.js';
 import { Post } from '../posts/entity/post.entity.js';
+import { PusherService } from '../pusher/pusher.service.js';
 
 @Module({
     imports: [
@@ -37,6 +38,6 @@ import { Post } from '../posts/entity/post.entity.js';
         StoriesModule,
     ],
     controllers: [CrawlJobController],
-    providers: [CrawlJobService, CrawlJobProcessor, CrawlCommentProcessor, FilterCommentProcessor, ThreadsClient, MergeStoryProcessor],
+    providers: [CrawlJobService, CrawlJobProcessor, CrawlCommentProcessor, FilterCommentProcessor, ThreadsClient, MergeStoryProcessor, PusherService],
 })
 export class CrawlJobModule {}

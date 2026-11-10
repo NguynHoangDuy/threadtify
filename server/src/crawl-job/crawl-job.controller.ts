@@ -12,9 +12,15 @@ export class CrawlJobController {
         @InjectQueue(QUEUE_NAME.FILTER_COMMENT_QUEUE) private readonly FilterCommentQueue: Queue,
     ) {}
 
-    @Get()
-    async createCrawlJob(@Query('keyWord') keyWord: string): Promise<any> {
+    @Post('create')
+    async createCrawlJob(@Body('keyWord') keyWord: string): Promise<any> {
         const result = await this.crawlJobService.createCrawlJob(keyWord);
+        return result;
+    }
+
+    @Get(':id')
+    async getCrawlJob(@Param('id') id: number): Promise<any> {
+        const result = await this.crawlJobService.getCrawlJob(id);
         return result;
     }
 
