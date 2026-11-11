@@ -3,27 +3,27 @@ import { LLMStatus, LLMType } from '../../common/constants/status.enum.js';
 
 @Entity('LLMRun')
 export class LLMRun {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+     @PrimaryGeneratedColumn('uuid')
+     id: string;
 
-    @Column()
-    type: LLMType;
+     @Column()
+     type: LLMType;
 
-    @Column({ type: 'text' })
-    prompt: string;
+     @Column({ type: 'text' })
+     prompt: string;
 
-    @Column({ type: 'text', nullable: true })
-    result: string | null;
+     @Column({ type: 'text', nullable: true })
+     result: string | null;
 
-    @Column({ type: 'text', nullable: true })
-    error: string | null;
+     @Column({ type: 'text', nullable: true })
+     error: string | null;
 
-    @Column({ default: LLMStatus.PENDING })
-    status: LLMStatus;
+     @Column({ default: LLMStatus.PENDING })
+     status: LLMStatus;
 
-    @CreateDateColumn()
-    createdAt: Date;
+     @CreateDateColumn()
+     createdAt: Date;
 
-    @UpdateDateColumn()
-    updatedAt: Date;
+     @UpdateDateColumn()
+     updatedAt: Date;
 }

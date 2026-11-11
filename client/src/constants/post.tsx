@@ -10,6 +10,7 @@ export type Post = {
      status: string;
      postUrl: string;
      numRelatedComment: number;
+     numComment: number;
      error: string;
 };
 
@@ -53,11 +54,6 @@ export const PostStatusStyle: Record<string, { label: string; className: string;
      [PostStatus.COMPLETED]: { label: 'COMPLETED', className: color.success },
 };
 
-export type PostDetail = {
-     story: { id: string; score: number } | null;
-     comments: { content: string }[];
-};
-
 export const STEPS = [
      { label: 'Crawl Comments', running: PostStatus.CRAWL_COMMENT, done: PostStatus.DONE_CRAWL_COMMENT, failed: PostStatus.FAILED_CRAWL_COMMENT },
      { label: 'Filter Comments', running: PostStatus.FILTER_COMMENT, done: PostStatus.DONE_FILTER_COMMENT, failed: PostStatus.FAILED_FILTER_COMMENT },
@@ -84,4 +80,11 @@ export const StepStyle: Record<StepState, { circle: string; title: string }> = {
      running: { circle: 'bg-amber-950 text-amber-400 animate-pulse', title: 'text-amber-400' },
      failed: { circle: 'bg-red-950 text-red-400', title: 'text-red-400' },
      waiting: { circle: 'bg-zinc-900 text-zinc-500', title: 'text-zinc-500' },
+};
+
+export type PostComment = { id: string; content: string; isRelevant: boolean };
+
+export type PostDetail = {
+     story: { id: string; score: number } | null;
+     comments: PostComment[];
 };

@@ -2,6 +2,7 @@ import type { CrawlJob } from '@/store/crawlJobsSlice';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import { Fragment } from 'react/jsx-runtime';
 import { PostTab } from './PostTab';
+import { StoriesTab } from './StoriesTab';
 
 export const CrawlJobDetailTab = ({ job }: { job: CrawlJob }) => {
      const tabList = [
@@ -25,7 +26,7 @@ export const CrawlJobDetailTab = ({ job }: { job: CrawlJob }) => {
                </TabsContent>
 
                <TabsContent value='stories' className='mt-6'>
-                    ...
+                    <StoriesTab job={job} />
                </TabsContent>
           </Tabs>
      );

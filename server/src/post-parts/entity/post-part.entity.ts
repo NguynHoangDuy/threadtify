@@ -3,27 +3,27 @@ import type { Post } from '../../posts/entity/post.entity.js';
 
 @Entity('PostParts')
 export class PostPart {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+     @PrimaryGeneratedColumn('uuid')
+     id: string;
 
-    @Column()
-    postId: string;
+     @Column()
+     postId: string;
 
-    @Column({ type: 'text' })
-    content: string;
+     @Column({ type: 'text' })
+     content: string;
 
-    @CreateDateColumn()
-    createdAt: Date;
+     @CreateDateColumn()
+     createdAt: Date;
 
-    @UpdateDateColumn()
-    updatedAt: Date;
+     @UpdateDateColumn()
+     updatedAt: Date;
 
-    @Column({ type: 'boolean', nullable: true, default: false })
-    isRelevant: boolean | null;
+     @Column({ type: 'boolean', nullable: true, default: false })
+     isRelevant: boolean | null;
 
-    @ManyToOne('Post', 'PostParts', {
-        onDelete: 'CASCADE',
-    })
-    @JoinColumn({ name: 'postId', referencedColumnName: 'id' })
-    post: Post;
+     @ManyToOne('Post', 'PostParts', {
+          onDelete: 'CASCADE',
+     })
+     @JoinColumn({ name: 'postId', referencedColumnName: 'id' })
+     post: Post;
 }

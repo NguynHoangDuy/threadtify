@@ -1,15 +1,19 @@
-import { IsInt, IsOptional, IsString, IsUUID } from 'class-validator';
+import { IsInt, IsNumber, IsOptional, IsString } from 'class-validator';
 
 export class CreateStoryDto {
-    @IsUUID()
-    jobId: string;
+     @IsNumber()
+     jobId: number;
 
-    @IsString()
-    postId: string;
+     @IsString()
+     postId: string;
 
-    @IsString()
-    content: string;
+     @IsString()
+     content: string;
 
-    @IsInt()
-    score: number;
+     @IsOptional()
+     @IsString()
+     name: string | null;
+
+     @IsInt()
+     score: number;
 }

@@ -1,4 +1,4 @@
-import { PostStatus, PostStatusStyle, STATUS_ORDER, STEPS, StepStyle, type Post, type PostDetail } from '@/constants/post';
+import { PostStatus, PostStatusStyle, STATUS_ORDER, STEPS, StepStyle, type Post, type PostComment, type PostDetail } from '@/constants/post';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '../ui/dialog';
 import { parseJson } from '@/utils';
 import { Badge } from '../ui/badge';
@@ -8,14 +8,49 @@ import axios from 'axios';
 import { BookOpen, ExternalLink, Loader2, MessageCircle, RefreshCw, Route } from 'lucide-react';
 import { Skeleton } from '../ui/skeleton';
 import { Button } from '../ui/button';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../ui/tabs';
 import type { StepState } from '@/constants/crawl-job';
 import { Connector } from '../layout/utils';
+
+type CommentTab = 'related' | 'all';
+
+const CommentList = ({ comments, isLoading, showStatus, emptyText }: { comments: PostComment[]; isLoading: boolean; showStatus: boolean; emptyText: string }) => {
+     if (isLoading) {
+          return (
+               <div className='space-y-3'>
+                    <Skeleton className='h-16 w-full' />
+                    <Skeleton className='h-16 w-full' />
+                    <Skeleton className='h-16 w-full' />
+               </div>
+          );
+     }
+
+     if (comments.length === 0) {
+          return <p className='py-6 text-center text-sm text-muted-foreground'>{emptyText}</p>;
+     }
+
+     return (
+          <ul className='space-y-3'>
+               {comments.map((c) => (
+                    <li key={c.id} className='flex items-start gap-3 rounded-lg bg-muted/50 px-3 py-2 text-sm'>
+                         {showStatus && (
+                              <Badge variant='outline' className={`mt-0.5 shrink-0 text-[10px] ${c.isRelevant ? 'border-green-500/30 bg-green-500/10 text-green-400' : 'text-muted-foreground'}`}>
+                                   {c.isRelevant ? 'Kept' : 'Dropped'}
+                              </Badge>
+                         )}
+                         <span className='whitespace-pre-line text-muted-foreground'>{c.content}</span>
+                    </li>
+               ))}
+          </ul>
+     );
+};
 
 export const PostDialog = ({ selectedPost, handleClose, open }: { selectedPost: Post | null; handleClose: () => void; open: boolean }) => {
      const user = parseJson<{ username?: string; profileUrl?: string }>(selectedPost?.author) ?? {};
 
      const [detail, setDetail] = useState<PostDetail | null>(null);
      const [isLoadingDetail, setIsLoadingDetail] = useState<boolean>(false);
+     const [tab, setTab] = useState<CommentTab>('related');
 
      useEffect(() => {
           if (!open || !selectedPost) return;
@@ -25,6 +60,7 @@ export const PostDialog = ({ selectedPost, handleClose, open }: { selectedPost: 
           const fetchDetail = async () => {
                setIsLoadingDetail(true);
                setDetail(null);
+               setTab('related');
                try {
                     const data = await callAPI('GET', `/api/post-parts?postId=${selectedPost.id}`, undefined, { signal: controller.signal });
                     setDetail(data);
@@ -56,6 +92,9 @@ export const PostDialog = ({ selectedPost, handleClose, open }: { selectedPost: 
 
      const isFailed = [PostStatus.FAILED_MERGE_STORY, PostStatus.FAILED_FILTER_COMMENT, PostStatus.FAILED_CRAWL_COMMENT].includes(selectedPost ? selectedPost?.status : '');
 
+     const comments = detail?.comments ?? [];
+     const relatedComments = comments.filter((c) => c.isRelevant);
+
      return (
           <Dialog open={open} onOpenChange={(open) => !open && handleClose()}>
                <DialogContent className='duration-100 flex max-h-[85vh] !w-[60vw] !max-w-[60rem] flex-col gap-0 p-0'>
@@ -73,6 +112,7 @@ export const PostDialog = ({ selectedPost, handleClose, open }: { selectedPost: 
                          <div className='p-6'>
                               <p className='whitespace-pre-line text-sm leading-relaxed'>{selectedPost?.content}</p>
                          </div>
+
                          <div className='border-t'>
                               <div className='p-6'>
                                    <div className='flex items-center gap-4 mb-6'>
@@ -120,37 +160,37 @@ export const PostDialog = ({ selectedPost, handleClose, open }: { selectedPost: 
                                                   Retry
                                              </Button>
                                         </div>
-                                   )}{' '}
+                                   )}
                               </div>
                          </div>
+
                          <div className='border-t'>
                               <div className='p-6'>
-                                   {isLoadingDetail ? (
-                                        <div className='space-y-3'>
-                                             <Skeleton className='h-4 w-32' />
-                                             <Skeleton className='h-16 w-full' />
-                                             <Skeleton className='h-16 w-full' />
-                                        </div>
-                                   ) : (
-                                        <>
-                                             <div className='mb-3 flex items-center gap-2 text-sm font-medium'>
+                                   <Tabs value={tab} onValueChange={(value) => setTab(value as CommentTab)}>
+                                        <div className='mb-4 flex items-center justify-between'>
+                                             <div className='flex items-center gap-2 text-sm font-medium'>
                                                   <MessageCircle className='h-4 w-4' />
-                                                  Related comments ({detail?.comments.length ?? 0})
+                                                  Comments
                                              </div>
 
-                                             {!detail || detail.comments.length === 0 ? (
-                                                  <p className='py-6 text-center text-sm text-muted-foreground'>No related comments</p>
-                                             ) : (
-                                                  <ul className='space-y-3'>
-                                                       {detail.comments.map((c, i) => (
-                                                            <li key={i} className='rounded-lg bg-muted/50 px-3 py-2 text-sm text-muted-foreground whitespace-pre-line'>
-                                                                 {c.content}
-                                                            </li>
-                                                       ))}
-                                                  </ul>
-                                             )}
-                                        </>
-                                   )}
+                                             <TabsList>
+                                                  <TabsTrigger value='related' className='cursor-pointer text-xs'>
+                                                       Related ({relatedComments.length})
+                                                  </TabsTrigger>
+                                                  <TabsTrigger value='all' className='cursor-pointer text-xs'>
+                                                       All ({comments.length})
+                                                  </TabsTrigger>
+                                             </TabsList>
+                                        </div>
+
+                                        <TabsContent value='related'>
+                                             <CommentList comments={relatedComments} isLoading={isLoadingDetail} showStatus={false} emptyText='No related comments' />
+                                        </TabsContent>
+
+                                        <TabsContent value='all'>
+                                             <CommentList comments={comments} isLoading={isLoadingDetail} showStatus emptyText='No comments' />
+                                        </TabsContent>
+                                   </Tabs>
                               </div>
                          </div>
                     </div>

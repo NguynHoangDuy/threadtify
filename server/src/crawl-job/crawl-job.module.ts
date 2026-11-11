@@ -18,26 +18,26 @@ import { Post } from '../posts/entity/post.entity.js';
 import { PusherService } from '../pusher/pusher.service.js';
 
 @Module({
-    imports: [
-        TypeOrmModule.forFeature([CrawlJob, Post]),
-        BullModule.registerQueue({
-            name: QUEUE_NAME.CRAWL_JOB_QUEUE,
-        }),
-        BullModule.registerQueue({
-            name: QUEUE_NAME.CRAWL_COMMENT_QUEUE,
-        }),
-        BullModule.registerQueue({
-            name: QUEUE_NAME.FILTER_COMMENT_QUEUE,
-        }),
-        BullModule.registerQueue({
-            name: QUEUE_NAME.MERGE_STORY_QUEUE,
-        }),
-        PostsModule,
-        PostPartsModule,
-        LLMModule,
-        StoriesModule,
-    ],
-    controllers: [CrawlJobController],
-    providers: [CrawlJobService, CrawlJobProcessor, CrawlCommentProcessor, FilterCommentProcessor, ThreadsClient, MergeStoryProcessor, PusherService],
+     imports: [
+          TypeOrmModule.forFeature([CrawlJob, Post]),
+          BullModule.registerQueue({
+               name: QUEUE_NAME.CRAWL_JOB_QUEUE,
+          }),
+          BullModule.registerQueue({
+               name: QUEUE_NAME.CRAWL_COMMENT_QUEUE,
+          }),
+          BullModule.registerQueue({
+               name: QUEUE_NAME.FILTER_COMMENT_QUEUE,
+          }),
+          BullModule.registerQueue({
+               name: QUEUE_NAME.MERGE_STORY_QUEUE,
+          }),
+          PostsModule,
+          PostPartsModule,
+          LLMModule,
+          StoriesModule,
+     ],
+     controllers: [CrawlJobController],
+     providers: [CrawlJobService, CrawlJobProcessor, CrawlCommentProcessor, FilterCommentProcessor, ThreadsClient, MergeStoryProcessor, PusherService],
 })
 export class CrawlJobModule {}

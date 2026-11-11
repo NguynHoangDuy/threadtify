@@ -4,34 +4,37 @@ import { Post } from '../../posts/entity/post.entity.js';
 
 @Entity('Stories')
 export class Stories {
-    @PrimaryGeneratedColumn('uuid')
-    id: string;
+     @PrimaryGeneratedColumn('uuid')
+     id: string;
 
-    @Column()
-    jobId: string;
+     @Column()
+     jobId: number;
 
-    @Column()
-    postId: string;
+     @Column()
+     postId: string;
 
-    @Column({ type: 'text' })
-    content: string;
+     @Column({ type: 'text' })
+     content: string;
 
-    @Column()
-    score: number;
+     @Column()
+     score: number;
 
-    @CreateDateColumn()
-    createdAt: Date;
+     @Column({ type: 'varchar', nullable: true })
+     name: string | null;
 
-    @UpdateDateColumn()
-    updatedAt: Date;
+     @CreateDateColumn()
+     createdAt: Date;
 
-    @ManyToOne('CrawlJob', 'Stories', {
-        onDelete: 'CASCADE',
-    })
-    @JoinColumn({ name: 'jobId', referencedColumnName: 'id' })
-    job: CrawlJob;
+     @UpdateDateColumn()
+     updatedAt: Date;
 
-    @OneToOne(() => Post, { onDelete: 'CASCADE' })
-    @JoinColumn({ name: 'postId', referencedColumnName: 'id' })
-    post: Post;
+     @ManyToOne('CrawlJob', 'Stories', {
+          onDelete: 'CASCADE',
+     })
+     @JoinColumn({ name: 'jobId', referencedColumnName: 'id' })
+     job: CrawlJob;
+
+     @OneToOne(() => Post, { onDelete: 'CASCADE' })
+     @JoinColumn({ name: 'postId', referencedColumnName: 'id' })
+     post: Post;
 }

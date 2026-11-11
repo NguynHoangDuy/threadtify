@@ -1,9 +1,9 @@
 import { IsString } from 'class-validator';
 
 export class PostPartDto {
-    @IsString()
-    postId: string;
+     @IsString()
+     postId: string;
 
-    @IsString()
-    content: string;
+     @IsString()
+     content: string;
 }

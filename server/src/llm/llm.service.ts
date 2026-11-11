@@ -7,25 +7,25 @@ import { UpdateLLMRunDto } from './dto/updatellm.dto.js';
 
 @Injectable()
 export class LLMService {
-    constructor(
-        @InjectRepository(LLMRun)
-        private LLMRunRepository: Repository<LLMRun>,
-    ) {}
+     constructor(
+          @InjectRepository(LLMRun)
+          private LLMRunRepository: Repository<LLMRun>,
+     ) {}
 
-    async create(data: LLMRunDto): Promise<LLMRun> {
-        return await this.LLMRunRepository.save(data);
-    }
+     async create(data: LLMRunDto): Promise<LLMRun> {
+          return await this.LLMRunRepository.save(data);
+     }
 
-    async update(id: string, dto: UpdateLLMRunDto): Promise<LLMRun> {
-        const llmRun = await this.LLMRunRepository.preload({
-            id,
-            ...dto,
-        });
+     async update(id: string, dto: UpdateLLMRunDto): Promise<LLMRun> {
+          const llmRun = await this.LLMRunRepository.preload({
+               id,
+               ...dto,
+          });
 
-        if (!llmRun) {
-            throw new Error(`LLMRun ${id} not found`);
-        }
+          if (!llmRun) {
+               throw new Error(`LLMRun ${id} not found`);
+          }
 
-        return this.LLMRunRepository.save(llmRun);
-    }
+          return this.LLMRunRepository.save(llmRun);
+     }
 }

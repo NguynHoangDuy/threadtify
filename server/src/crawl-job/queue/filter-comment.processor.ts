@@ -11,90 +11,92 @@ import { PusherService } from '../../pusher/pusher.service.js';
 
 @Processor(QUEUE_NAME.FILTER_COMMENT_QUEUE, { concurrency: 1 })
 export class FilterCommentProcessor extends WorkerHost {
-    constructor(
-        private readonly PostPastService: PostPartsService,
-        private readonly PostsService: PostsService,
-        private readonly CrawlJobService: CrawlJobService,
-        private readonly PusherService: PusherService,
-        private readonly LLMClient: LLMClient,
-        @InjectQueue(QUEUE_NAME.MERGE_STORY_QUEUE) private MergeStoryQueue: Queue,
-    ) {
-        super();
-    }
-    async process(job: Job): Promise<any> {
-        const { data: jobId } = job;
+     constructor(
+          private readonly PostPastService: PostPartsService,
+          private readonly PostsService: PostsService,
+          private readonly CrawlJobService: CrawlJobService,
+          private readonly PusherService: PusherService,
+          private readonly LLMClient: LLMClient,
+          @InjectQueue(QUEUE_NAME.MERGE_STORY_QUEUE) private MergeStoryQueue: Queue,
+     ) {
+          super();
+     }
+     async process(job: Job): Promise<any> {
+          const { data: jobId } = job;
 
-        await this.CrawlJobService.updateCrawlJob(jobId, { status: CrawlJobStatus.FILTER_COMMENT });
-        await this.PusherService.addTriggerUpdateJob({
-            id: jobId,
-            status: CrawlJobStatus.FILTER_COMMENT,
-        });
-        const posts = await this.PostsService.findPostToRunning({ jobId, status: [PostStatus.DONE_CRAWL_COMMENT, PostStatus.FAILED_FILTER_COMMENT, PostStatus.FILTER_COMMENT] });
+          await this.CrawlJobService.updateCrawlJob(jobId, { status: CrawlJobStatus.FILTER_COMMENT });
+          await this.PusherService.addTriggerUpdateJob({
+               id: jobId,
+               status: CrawlJobStatus.FILTER_COMMENT,
+          });
+          const posts = await this.PostsService.findPostToRunning({ jobId, status: [PostStatus.DONE_CRAWL_COMMENT, PostStatus.FAILED_FILTER_COMMENT, PostStatus.FILTER_COMMENT] });
 
-        for (let i = 0; i < posts.length; i++) {
-            const post = posts[i];
-            try {
-                await this.PostsService.updateStatus(post.id, PostStatus.FILTER_COMMENT);
-                await this.PusherService.addTriggerUpdatePost({
-                    id: post.id,
-                    status: CrawlJobStatus.FILTER_COMMENT,
-                });
-                const comments = await this.PostPastService.findCommentsInPost(post.id);
-
-                if (comments.length > 0) {
-                    const postPart = comments.map((item) => {
-                        return { id: item.id, content: item.content };
+          for (let i = 0; i < posts.length; i++) {
+               const post = posts[i];
+               try {
+                    await this.PostsService.updateStatus(post.id, PostStatus.FILTER_COMMENT);
+                    await this.PusherService.addTriggerUpdatePost({
+                         id: post.id,
+                         status: CrawlJobStatus.FILTER_COMMENT,
                     });
-                    const CHUNK_SIZE = 20;
+                    const comments = await this.PostPastService.findCommentsInPost(post.id);
 
-                    for (let start = 0; start < postPart.length; start += CHUNK_SIZE) {
-                        const chunk = postPart.slice(start, start + CHUNK_SIZE);
-                        const results = await this.LLMClient.filterStoryPart({ content: post.content }, chunk);
-                        await this.PostPastService.markRelevance(results);
-                        await sleep(1000);
+                    if (comments.length > 0) {
+                         const postPart = comments.map((item) => {
+                              return { id: item.id, content: item.content };
+                         });
+                         const CHUNK_SIZE = 20;
+
+                         for (let start = 0; start < postPart.length; start += CHUNK_SIZE) {
+                              const chunk = postPart.slice(start, start + CHUNK_SIZE);
+                              const results = await this.LLMClient.filterStoryPart({ content: post.content }, chunk);
+                              await this.PostPastService.markRelevance(results);
+                              await sleep(1000);
+                         }
                     }
-                }
+                    const numRelatedComment = comments.length > 0 ? await this.PostPastService.countRelevant(post.id) : 0;
 
-                await this.PostsService.updateStatus(post.id, PostStatus.DONE_FILTER_COMMENT);
-                await this.PusherService.addTriggerUpdatePost({
-                    id: post.id,
-                    status: PostStatus.DONE_FILTER_COMMENT,
-                });
-            } catch (error) {
-                const message = error instanceof Error ? error.message : JSON.stringify(error);
+                    await this.PostsService.updateStatus(post.id, PostStatus.DONE_FILTER_COMMENT);
+                    await this.PusherService.addTriggerUpdatePost({
+                         id: post.id,
+                         status: PostStatus.DONE_FILTER_COMMENT,
+                         numRelatedComment,
+                    });
+               } catch (error) {
+                    const message = error instanceof Error ? error.message : JSON.stringify(error);
 
-                console.log('Error QUEUE_NAME.FILTER_COMMENT_QUEUE postId-jobId', `${post.id}-${jobId}`, message);
-                await this.PostsService.update(post.id, { status: PostStatus.FAILED_FILTER_COMMENT, error: message });
-                await this.PusherService.addTriggerUpdatePost({
-                    id: post.id,
-                    status: PostStatus.FAILED_FILTER_COMMENT,
-                });
-            }
-        }
+                    console.log('Error QUEUE_NAME.FILTER_COMMENT_QUEUE postId-jobId', `${post.id}-${jobId}`, message);
+                    await this.PostsService.update(post.id, { status: PostStatus.FAILED_FILTER_COMMENT, error: message });
+                    await this.PusherService.addTriggerUpdatePost({
+                         id: post.id,
+                         status: PostStatus.FAILED_FILTER_COMMENT,
+                    });
+               }
+          }
 
-        const numRelevant = await this.PostPastService.countRelatedComment(jobId);
-        await this.CrawlJobService.updateCrawlJob(jobId, { numRelevant, status: CrawlJobStatus.DONE_FILTER_COMMENT });
-        await this.PusherService.addTriggerUpdatePost({
-            id: jobId,
-            status: CrawlJobStatus.DONE_FILTER_COMMENT,
-            numRelevant,
-        });
+          const numRelevant = await this.PostPastService.countRelatedComment(jobId);
+          await this.CrawlJobService.updateCrawlJob(jobId, { numRelevant, status: CrawlJobStatus.DONE_FILTER_COMMENT });
+          await this.PusherService.addTriggerUpdateJob({
+               id: jobId,
+               status: CrawlJobStatus.DONE_FILTER_COMMENT,
+               numRelevant,
+          });
 
-        await this.MergeStoryQueue.add(QUEUE_NAME.MERGE_STORY_QUEUE, jobId, {
-            attempts: 3,
-            backoff: { type: 'exponential', delay: 10000 },
-        });
-    }
+          await this.MergeStoryQueue.add(QUEUE_NAME.MERGE_STORY_QUEUE, jobId, {
+               attempts: 3,
+               backoff: { type: 'exponential', delay: 10000 },
+          });
+     }
 
-    @OnWorkerEvent('failed')
-    async onFailed(job: Job) {
-        const isLastAttempt = job.attemptsMade >= (job.opts.attempts ?? 1);
-        if (isLastAttempt) {
-            await this.CrawlJobService.updateCrawlJob(job.data, { status: CrawlJobStatus.FAILED });
-            await this.PusherService.addTriggerUpdatePost({
-                id: job.data,
-                status: CrawlJobStatus.FAILED,
-            });
-        }
-    }
+     @OnWorkerEvent('failed')
+     async onFailed(job: Job) {
+          const isLastAttempt = job.attemptsMade >= (job.opts.attempts ?? 1);
+          if (isLastAttempt) {
+               await this.CrawlJobService.updateCrawlJob(job.data, { status: CrawlJobStatus.FAILED });
+               await this.PusherService.addTriggerUpdateJob({
+                    id: job.data,
+                    status: CrawlJobStatus.FAILED,
+               });
+          }
+     }
 }

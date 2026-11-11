@@ -4,7 +4,7 @@ import { callAPI } from '@/utils/apiCaller';
 import { useEffect, useState } from 'react';
 import { Pagination } from '../layout/Pagination';
 import { Card, CardContent, CardFooter, CardHeader } from '../ui/card';
-import { Loader2, Quote } from 'lucide-react';
+import { Loader2, MessageCircle, Quote } from 'lucide-react';
 import { parseJson } from '@/utils';
 import { PostCardSkeleton } from '../post/PostLoading';
 import { Badge } from '../ui/badge';
@@ -89,8 +89,23 @@ export const PostTab = ({ job }: { job: CrawlJob }) => {
                                              <p className='line-clamp-4'>{post.content}</p>
                                         </CardContent>
 
-                                        <CardFooter className='flex-1 text-sm text-muted-foreground mt-4'>
-                                             <p className=''>Related Comments ({post.numRelatedComment})</p>
+                                        <CardFooter className='mt-auto flex-col items-stretch gap-2 border-t px-6 pt-3 text-xs text-muted-foreground'>
+                                             {post.numComment > 0 ? (
+                                                  <>
+                                                       <div className='flex items-center justify-between'>
+                                                            <span className='flex items-center gap-1.5'>
+                                                                 <MessageCircle className='h-3.5 w-3.5' />
+                                                                 {post.numComment} Comments
+                                                            </span>
+                                                            <span className={post.numRelatedComment > 0 ? 'font-medium text-green-400' : ''}>{post.numRelatedComment} Related</span>
+                                                       </div>
+                                                  </>
+                                             ) : (
+                                                  <span className='flex items-center gap-1.5'>
+                                                       <MessageCircle className='h-3.5 w-3.5' />
+                                                       No comments
+                                                  </span>
+                                             )}
                                         </CardFooter>
                                    </Card>
                               );

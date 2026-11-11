@@ -17,13 +17,13 @@ export function CrawlJobsTable() {
      }, []);
 
      const handlePageSizeChange = (size: number) => {
-          setPageSize(size);
-          setPage(1);
+          dispatch(setPageSize(size));
+          dispatch(setPage(1));
           dispatch(fetchCrawlJobs({ page: 1, pageSize: size }));
      };
 
      const handlePageChange = (p: number) => {
-          setPage(p);
+          dispatch(setPage(p));
           dispatch(fetchCrawlJobs({ page: p, pageSize }));
      };
 

@@ -5,8 +5,8 @@ import { TypeOrmModule } from '@nestjs/typeorm';
 import { LLMRun } from './entity/llm.entity.js';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([LLMRun])],
-    providers: [LLMClient, LLMService],
-    exports: [LLMClient, LLMService],
+     imports: [TypeOrmModule.forFeature([LLMRun])],
+     providers: [LLMClient, LLMService],
+     exports: [LLMClient, LLMService],
 })
 export class LLMModule {}

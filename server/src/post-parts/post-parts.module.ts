@@ -6,9 +6,9 @@ import { PostPart } from './entity/post-part.entity.js';
 import { Stories } from '../stories/entity/stories.entity.js';
 
 @Module({
-    imports: [TypeOrmModule.forFeature([PostPart, Stories])],
-    controllers: [PostPartsController],
-    providers: [PostPartsService],
-    exports: [PostPartsService],
+     imports: [TypeOrmModule.forFeature([PostPart, Stories])],
+     controllers: [PostPartsController],
+     providers: [PostPartsService],
+     exports: [PostPartsService],
 })
 export class PostPartsModule {}
